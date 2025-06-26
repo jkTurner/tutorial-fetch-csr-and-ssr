@@ -16,6 +16,7 @@ This project is part of the **Dev Steps Tutorials** series by Jakkrit Turner.
 Follow the complete tutorial here:
 
 **[API Fetching Tutorial (CSR) on jkturner.site](http://jkturner.site/tutorials/react-essentials/api/fetch-ssr)**
+
 **[API Fetching Tutorial (SSR) on jkturner.site](http://jkturner.site/tutorials/react-essentials/api/fetch-csr)**
 
 ## Tech Stack
