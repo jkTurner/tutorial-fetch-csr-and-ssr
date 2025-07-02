@@ -1,44 +1,69 @@
+import Image from "next/image";
+ 
 interface RecipeProps {
     id: number;
     name: string;
-    instructions: string;
     image: string;
+    instructions: string;
 }
-
-export default async function FetchSSRPage() {
-
-    const getRecipes = async (): Promise<RecipeProps[] | null> => {
-        try {
-            const res = await fetch("https://dummyjson.com/recipes");
-            if (!res.ok) {
-                throw new Error(`Failed to fetch posts: ${res.status} ${res.statusText}`);
-            }
-            const data = await res.json();
-            return data.recipes;
-        } catch (error) {
-            console.error("Fetch error:", (error as Error).message);
-            return null;
+ 
+async function getRecipes(): Promise<{ recipes: RecipeProps[] | null; error: string | null }> {
+    try {
+        const res = await fetch("https://dummyjson.com/recipes");
+        if (!res.ok) {
+            throw new Error(`Error fetching recipes: ${res.status} ${res.statusText}`);
         }
-    };
-
-    const recipes = await getRecipes();
-
+        const data = await res.json();
+        if (!data.recipes || !Array.isArray(data.recipes)) {
+            throw new Error("Invalid recipe data format");
+        }
+        return { recipes: data.recipes, error: null };
+    } catch (error) {
+        console.error((error as Error).message);
+        return {
+            recipes: null,
+            error: (error as Error).message || "Unknown error occurred",
+        }
+    }
+}
+ 
+export default async function FetchSSRPage() {
+ 
+    const { recipes, error } = await getRecipes();
+ 
     return (
-        <div className="p-8">
-            <h1 className="text-lg font-semibold">Fetch SSR Method</h1>
-
-            {!recipes ? (
-                <p className="text-red-500">Failed to load recipes.</p>
-            ) : recipes.length === 0 ? (
-                <p>No recipes found.</p>
+        <div className="flex flex-col gap-8 p-8">
+            <h1 className="font-semibold text-lg">Fetch SSR Example</h1>
+            {error ? (
+                <p className="text-red-500">{error}</p>
             ) : (
-                recipes.map((recipe) => (
-                    <div key={recipe.id}>
-                    <p>{recipe.name}</p>
-                    </div>
-                ))
+                <>
+                    {recipes ? (
+                        <div className="cardsContainer">
+                            {recipes?.map((item) => (
+                                <div 
+                                    key={item.id}
+                                    className="flex flex-col bg-gray-700 p-4 gap-4"
+                                >
+                                    <h2 className="font-semibold">{item.name}</h2>
+                                    <div className="w-full aspect-[5/3] relative">
+                                        <Image
+                                            src={item.image}
+                                            alt={item.name}
+                                            fill
+                                            className="overflow-hidden object-center"
+                                        />
+                                    </div>
+                                    <p className="text-gray-400">{item.instructions}</p>
+                                </div>
+                            ))}
+                        </div>
+ 
+                    ) : (
+                        <p>No recipes found</p>
+                    )}
+                </>
             )}
-
         </div>
-    );
+    )
 }
